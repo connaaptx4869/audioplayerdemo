@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private boolean stop;
     private ArrayList<File> playList;
+    private boolean isPreparing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startPlayAudio() throws Exception {
+        if (isPreparing) {
+            return;
+        }
         int i = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         if (i == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
@@ -70,16 +74,19 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    isPreparing = false;
                     mediaPlayer.start();
                 }
             });
             mediaPlayer.setDataSource(randomSongPath);
             mediaPlayer.prepare();
+            isPreparing = true;
             stop = false;
         } else if (!mediaPlayer.isPlaying()) {
             if (stop) {
                 mediaPlayer.setDataSource(getRandomSongPath());
                 mediaPlayer.prepare();
+                isPreparing = true;
                 stop = false;
             } else {
                 mediaPlayer.start();
@@ -112,6 +119,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void pausePlayAudio() {
+        if (isPreparing) {
+            return;
+        }
         if (mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.pause();
@@ -120,6 +130,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopPlayAudio() {
+        if (isPreparing) {
+            return;
+        }
         if (mediaPlayer != null) {
             stop = true;
             mediaPlayer.stop();
